@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Masjid Finder</title>
+</head>
+<body class="bg-gray-100 flex flex-col justify-center items-center min-h-screen">
+    <header class="w-full bg-blue-600 p-4 text-white text-center">
+        <h1 class="text-3xl font-bold">Masjid Finder</h1>
+    </header>
+    <main class="flex flex-col items-center mt-6 w-full max-w-2xl">
+        <input type="text" id="search" placeholder="Search for a masjid..." class="p-2 border border-gray-300 rounded-md w-full mb-4">
+        <button id="searchButton" class="bg-blue-500 text-white font-semibold py-2 px-4 rounded">Search</button>
+        <ul id="masjidList" class="mt-4 w-full"></ul>
+    </main>
+    <footer class="w-full bg-gray-800 p-4 text-white text-center mt-auto">
+        <p>&copy; 2026 Masjid Finder. All rights reserved.</p>
+    </footer>
+    <script>
+        const masjids = [/* Add your masjid data here */];
+        const masjidList = document.getElementById('masjidList');
+        const searchButton = document.getElementById('searchButton');
+        const searchInput = document.getElementById('search');
+
+        searchButton.addEventListener('click', () => {
+            const query = searchInput.value.toLowerCase();
+            masjidList.innerHTML = '';
+            const filteredMasjids = masjids.filter(masjid => masjid.name.toLowerCase().includes(query));
+            filteredMasjids.forEach(masjid => {
+                const li = document.createElement('li');
+                li.classList.add('bg-white', 'p-4', 'my-2', 'rounded', 'shadow');
+                li.textContent = masjid.name;
+                masjidList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>
