@@ -15,16 +15,40 @@
       z-index: 10;
     }
 
-    /* Adjust table width and add space */
+    /* Table container style */
     .table-wrapper {
-      max-width: 100%; /* Prevents squishing */
-      margin: 0 auto; /* Centers the table */
+      width: 100%;
+      margin: 0 auto;
       padding-right: 1rem; /* Adds right padding */
     }
 
     .table-view {
       width: 100%; /* Ensure the table takes full width of the container */
       border-collapse: collapse;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    .pagination button {
+      background-color: #ffe4ec;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+
+    .pagination button:hover {
+      background-color: #ffb6c1;
+    }
+
+    .pagination button.disabled {
+      background-color: #f0f0f0;
+      cursor: not-allowed;
     }
 
     /* Hide table on small screens, show card */
@@ -89,6 +113,11 @@
     </table>
   </div>
 
+  <!-- Pagination Controls -->
+  <div id="pagination" class="pagination">
+    <!-- Pagination buttons will be dynamically added here -->
+  </div>
+
   <!-- Card view (mobile) -->
   <div id="masjid-cards" class="card-view space-y-4"></div>
 
@@ -96,6 +125,8 @@
 
 <script>
 let masjidData = [];
+let currentPage = 1;
+let rowsPerPage = 50;
 
 async function fetchMasjidData() {
   try {
@@ -113,6 +144,7 @@ async function fetchMasjidData() {
     }).data;
 
     displayData(masjidData);
+    setupPagination(masjidData);
   } catch (error) {
     document.getElementById('masjid-table').innerHTML =
       `<tr><td colspan='15' class='text-center text-red-500 p-4'>Error loading data: ${error.message}</td></tr>`;
@@ -125,13 +157,18 @@ function displayData(data) {
   tableBody.innerHTML = '';
   cardsContainer.innerHTML = '';
 
-  if (!data.length) {
+  // Apply pagination
+  const start = (currentPage - 1) * rowsPerPage;
+  const end = currentPage * rowsPerPage;
+  const paginatedData = data.slice(start, end);
+
+  if (!paginatedData.length) {
     tableBody.innerHTML = `<tr><td colspan='15' class='text-center p-4 text-gray-500'>No results found</td></tr>`;
     cardsContainer.innerHTML = `<div class="text-center text-gray-500 p-4">No results found</div>`;
     return;
   }
 
-  data.forEach(masjid => {
+  paginatedData.forEach(masjid => {
     // Table row
     const row = `<tr class="border-b hover:bg-gray-50">
       <td class="border px-2 py-1">${masjid.id}</td>
@@ -171,18 +208,38 @@ function displayData(data) {
   });
 }
 
+function setupPagination(data) {
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const paginationContainer = document.getElementById('pagination');
+  paginationContainer.innerHTML = '';
+
+  const prevButton = `<button class="disabled ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">Prev</button>`;
+  paginationContainer.innerHTML += prevButton;
+
+  for (let i = 1; i <= totalPages; i++) {
+    const pageButton = `<button class="${currentPage === i ? 'bg-pink-500 text-white' : ''}" onclick="changePage(${i})">${i}</button>`;
+    paginationContainer.innerHTML += pageButton;
+  }
+
+  const nextButton = `<button class="disabled ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">Next</button>`;
+  paginationContainer.innerHTML += nextButton;
+}
+
+function changePage(page) {
+  currentPage = page;
+  displayData(masjidData);
+  setupPagination(masjidData);
+}
+
 function setupSearch() {
   const searchBox = document.getElementById('search');
   searchBox.addEventListener('input', () => {
     const filter = searchBox.value.toLowerCase().trim();
-    if (!filter) {
-      displayData(masjidData);
-      return;
-    }
     const filtered = masjidData.filter(m => 
       Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
     );
     displayData(filtered);
+    setupPagination(filtered);
   });
 }
 
