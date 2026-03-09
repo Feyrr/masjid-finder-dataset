@@ -15,11 +15,13 @@
       z-index: 10;
     }
 
-    /* Table container style */
+    /* Center the table in the container */
     .table-wrapper {
       width: 100%;
-      margin: 0 auto;
-      padding-right: 1rem; /* Adds right padding */
+      max-width: 1200px; /* Set a maximum width for the table */
+      margin: 0 auto; /* Center the table container */
+      padding: 0 1rem; /* Adds padding to left and right */
+      overflow-x: auto; /* Ensure it scrolls horizontally on smaller screens */
     }
 
     .table-view {
@@ -27,6 +29,7 @@
       border-collapse: collapse;
     }
 
+    /* Pagination styling */
     .pagination {
       display: flex;
       justify-content: center;
@@ -125,6 +128,7 @@
 
 <script>
 let masjidData = [];
+let filteredData = [];
 let currentPage = 1;
 let rowsPerPage = 50;
 
@@ -143,8 +147,10 @@ async function fetchMasjidData() {
       skipEmptyLines: true
     }).data;
 
-    displayData(masjidData);
-    setupPagination(masjidData);
+    filteredData = masjidData; // Initially, no filtering
+
+    displayData(filteredData);
+    setupPagination(filteredData);
   } catch (error) {
     document.getElementById('masjid-table').innerHTML =
       `<tr><td colspan='15' class='text-center text-red-500 p-4'>Error loading data: ${error.message}</td></tr>`;
@@ -210,36 +216,68 @@ function displayData(data) {
 
 function setupPagination(data) {
   const totalPages = Math.ceil(data.length / rowsPerPage);
-  const paginationContainer = document.getElementById('pagination');
-  paginationContainer.innerHTML = '';
+  const pagination = document.getElementById('pagination');
+  pagination.innerHTML = ''; // Clear existing pagination
 
-  const prevButton = `<button class="disabled ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">Prev</button>`;
-  paginationContainer.innerHTML += prevButton;
+  // Prev Button
+  const prevButton = document.createElement('button');
+  prevButton.innerText = 'Prev';
+  prevButton.disabled = currentPage === 1;
+  prevButton.classList.add('pagination-button', prevButton.disabled ? 'disabled' : '');
+  prevButton.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      displayData(data);
+      setupPagination(data);
+    }
+  });
+  pagination.appendChild(prevButton);
 
+  // Page numbers
   for (let i = 1; i <= totalPages; i++) {
-    const pageButton = `<button class="${currentPage === i ? 'bg-pink-500 text-white' : ''}" onclick="changePage(${i})">${i}</button>`;
-    paginationContainer.innerHTML += pageButton;
+    const pageButton = document.createElement('button');
+    pageButton.innerText = i;
+    pageButton.classList.add('pagination-button');
+    if (i === currentPage) {
+      pageButton.classList.add('bg-pink-100');
+    }
+    pageButton.addEventListener('click', () => {
+      currentPage = i;
+      displayData(data);
+      setupPagination(data);
+    });
+    pagination.appendChild(pageButton);
   }
 
-  const nextButton = `<button class="disabled ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">Next</button>`;
-  paginationContainer.innerHTML += nextButton;
-}
-
-function changePage(page) {
-  currentPage = page;
-  displayData(masjidData);
-  setupPagination(masjidData);
+  // Next Button
+  const nextButton = document.createElement('button');
+  nextButton.innerText = 'Next';
+  nextButton.disabled = currentPage === totalPages;
+  nextButton.classList.add('pagination-button', nextButton.disabled ? 'disabled' : '');
+  nextButton.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      displayData(data);
+      setupPagination(data);
+    }
+  });
+  pagination.appendChild(nextButton);
 }
 
 function setupSearch() {
   const searchBox = document.getElementById('search');
   searchBox.addEventListener('input', () => {
     const filter = searchBox.value.toLowerCase().trim();
-    const filtered = masjidData.filter(m => 
-      Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
-    );
-    displayData(filtered);
-    setupPagination(filtered);
+    if (!filter) {
+      filteredData = masjidData;
+    } else {
+      filteredData = masjidData.filter(masjid =>
+        Object.values(masjid).some(val => val && val.toString().toLowerCase().includes(filter))
+      );
+    }
+    currentPage = 1; // Reset to page 1 when search is updated
+    displayData(filteredData);
+    setupPagination(filteredData);
   });
 }
 
