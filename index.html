@@ -1,31 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Masjid Finder</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-<style>
-  /* Sticky header */
-  thead th {
-    position: sticky;
-    top: 0;
-    background-color: #ffe4ec; /* pink-100 */
-    z-index: 10;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masjid Finder</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    /* Sticky header */
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #ffe4ec; /* pink-100 */
+      z-index: 10;
+    }
 
-  /* Hide table on small screens, show card */
-  @media (max-width: 768px) {
-    .table-view { display: none; }
-    .card-view { display: block; }
-  }
+    /* Adjust table width and add space */
+    .table-wrapper {
+      max-width: 100%; /* Prevents squishing */
+      margin: 0 auto; /* Centers the table */
+      padding-right: 1rem; /* Adds right padding */
+    }
 
-  @media (min-width: 769px) {
-    .table-view { display: table; }
-    .card-view { display: none; }
-  }
-</style>
+    .table-view {
+      width: 100%; /* Ensure the table takes full width of the container */
+      border-collapse: collapse;
+    }
+
+    /* Hide table on small screens, show card */
+    @media (max-width: 768px) {
+      .table-view {
+        display: none;
+      }
+      .card-view {
+        display: block;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .table-view {
+        display: table;
+      }
+      .card-view {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-50">
 
@@ -40,7 +60,7 @@
   </div>
 
   <!-- Table view (desktop) -->
-  <div class="overflow-x-auto shadow rounded-lg table-view max-w-7xl mx-auto">
+  <div class="table-wrapper overflow-x-auto shadow rounded-lg table-view">
     <table class="min-w-full border-collapse">
       <thead>
         <tr>
@@ -72,24 +92,11 @@
   <!-- Card view (mobile) -->
   <div id="masjid-cards" class="card-view space-y-4"></div>
 
-  <!-- Pagination -->
-  <div id="pagination" class="flex justify-center items-center mt-4 space-x-2"></div>
-
 </div>
 
 <script>
-const ROWS_PER_PAGE = 50;
 let masjidData = [];
-let currentPage = 1;
-let filteredData = [];
 
-// Clean text helper to remove newlines or extra spaces
-function cleanText(text) {
-  if (!text) return '';
-  return text.replace(/\r?\n|\r/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-// Fetch CSV
 async function fetchMasjidData() {
   try {
     const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
@@ -105,110 +112,82 @@ async function fetchMasjidData() {
       skipEmptyLines: true
     }).data;
 
-    filteredData = masjidData;
-    currentPage = 1;
-    displayPage(currentPage);
+    displayData(masjidData);
   } catch (error) {
     document.getElementById('masjid-table').innerHTML =
       `<tr><td colspan='15' class='text-center text-red-500 p-4'>Error loading data: ${error.message}</td></tr>`;
   }
 }
 
-// Display table and cards for the given page
-function displayPage(page) {
+function displayData(data) {
   const tableBody = document.getElementById('masjid-table');
   const cardsContainer = document.getElementById('masjid-cards');
   tableBody.innerHTML = '';
   cardsContainer.innerHTML = '';
 
-  const start = (page - 1) * ROWS_PER_PAGE;
-  const end = start + ROWS_PER_PAGE;
-  const pageData = filteredData.slice(start, end);
-
-  if (!pageData.length) {
+  if (!data.length) {
     tableBody.innerHTML = `<tr><td colspan='15' class='text-center p-4 text-gray-500'>No results found</td></tr>`;
     cardsContainer.innerHTML = `<div class="text-center text-gray-500 p-4">No results found</div>`;
     return;
   }
 
-  pageData.forEach(masjid => {
+  data.forEach(masjid => {
     // Table row
     const row = `<tr class="border-b hover:bg-gray-50">
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.id)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.name)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.type)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.state)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.city)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.address)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.latitude)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.longitude)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.phone)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.email)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.website)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.facilities)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.capacity)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.established_year)}</td>
-      <td class="border px-2 py-1 whitespace-nowrap">${cleanText(masjid.notes)}</td>
+      <td class="border px-2 py-1">${masjid.id}</td>
+      <td class="border px-2 py-1">${masjid.name}</td>
+      <td class="border px-2 py-1">${masjid.type}</td>
+      <td class="border px-2 py-1">${masjid.state}</td>
+      <td class="border px-2 py-1">${masjid.city}</td>
+      <td class="border px-2 py-1">${masjid.address}</td>
+      <td class="border px-2 py-1">${masjid.latitude}</td>
+      <td class="border px-2 py-1">${masjid.longitude}</td>
+      <td class="border px-2 py-1">${masjid.phone}</td>
+      <td class="border px-2 py-1">${masjid.email}</td>
+      <td class="border px-2 py-1">${masjid.website}</td>
+      <td class="border px-2 py-1">${masjid.facilities}</td>
+      <td class="border px-2 py-1">${masjid.capacity}</td>
+      <td class="border px-2 py-1">${masjid.established_year}</td>
+      <td class="border px-2 py-1">${masjid.notes}</td>
     </tr>`;
     tableBody.innerHTML += row;
 
-    // Card view
+    // Mobile card
     const card = `<div class="bg-white shadow rounded p-4">
-      <h2 class="font-bold text-lg mb-1">${cleanText(masjid.name)}</h2>
-      <p><span class="font-semibold">Type:</span> ${cleanText(masjid.type)}</p>
-      <p><span class="font-semibold">State:</span> ${cleanText(masjid.state)}</p>
-      <p><span class="font-semibold">City:</span> ${cleanText(masjid.city)}</p>
-      <p><span class="font-semibold">Address:</span> ${cleanText(masjid.address)}</p>
-      <p><span class="font-semibold">Phone:</span> ${cleanText(masjid.phone)}</p>
-      <p><span class="font-semibold">Email:</span> ${cleanText(masjid.email)}</p>
-      <p><span class="font-semibold">Website:</span> ${cleanText(masjid.website)}</p>
-      <p><span class="font-semibold">Facilities:</span> ${cleanText(masjid.facilities)}</p>
-      <p><span class="font-semibold">Capacity:</span> ${cleanText(masjid.capacity)}</p>
-      <p><span class="font-semibold">Established:</span> ${cleanText(masjid.established_year)}</p>
-      <p><span class="font-semibold">Notes:</span> ${cleanText(masjid.notes)}</p>
+      <h2 class="font-bold text-lg mb-1">${masjid.name}</h2>
+      <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
+      <p><span class="font-semibold">State:</span> ${masjid.state}</p>
+      <p><span class="font-semibold">City:</span> ${masjid.city}</p>
+      <p><span class="font-semibold">Address:</span> ${masjid.address}</p>
+      <p><span class="font-semibold">Phone:</span> ${masjid.phone}</p>
+      <p><span class="font-semibold">Email:</span> ${masjid.email}</p>
+      <p><span class="font-semibold">Website:</span> ${masjid.website}</p>
+      <p><span class="font-semibold">Facilities:</span> ${masjid.facilities}</p>
+      <p><span class="font-semibold">Capacity:</span> ${masjid.capacity}</p>
+      <p><span class="font-semibold">Established:</span> ${masjid.established_year}</p>
+      <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
     </div>`;
     cardsContainer.innerHTML += card;
   });
-
-  renderPagination();
 }
 
-// Render pagination buttons
-function renderPagination() {
-  const pagination = document.getElementById('pagination');
-  pagination.innerHTML = '';
-  const totalPages = Math.ceil(filteredData.length / ROWS_PER_PAGE);
-  if (totalPages <= 1) return;
-
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.className = `px-3 py-1 rounded border ${i === currentPage ? 'bg-pink-200' : 'bg-white hover:bg-pink-100'}`;
-    btn.onclick = () => {
-      currentPage = i;
-      displayPage(currentPage);
-    };
-    pagination.appendChild(btn);
-  }
-}
-
-// Search
 function setupSearch() {
   const searchBox = document.getElementById('search');
   searchBox.addEventListener('input', () => {
     const filter = searchBox.value.toLowerCase().trim();
-    filteredData = filter
-      ? masjidData.filter(m => Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter)))
-      : masjidData;
-    currentPage = 1;
-    displayPage(currentPage);
+    if (!filter) {
+      displayData(masjidData);
+      return;
+    }
+    const filtered = masjidData.filter(m => 
+      Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
+    );
+    displayData(filtered);
   });
 }
 
-// Init
-window.onload = async () => {
-  await fetchMasjidData();
-  setupSearch();
+window.onload = () => {
+  fetchMasjidData().then(setupSearch);
 };
 </script>
 
