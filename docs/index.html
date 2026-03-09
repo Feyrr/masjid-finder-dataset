@@ -4,72 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masjid Finder</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(to right, #4facfe, #00f2fe);
-        }
-        table {
-            transition: transform 0.2s;
-        }
-        table:hover {
-            transform: scale(1.05);
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="font-sans">
-    <div class="container mx-auto p-5">
-        <h1 class="text-4xl text-center mb-6 text-white">Masjid Finder</h1>
-        <input type="text" id="search" placeholder="Search masjid..." class="mb-4 p-2 w-full rounded border border-gray-300">
-        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+<body>
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">Masjid Finder</h1>
+        <input type="text" id="search" class="mb-4 p-2 border rounded" placeholder="Search masjids..." />
+        <table class="min-w-full border-collapse border border-gray-200">
             <thead>
-                <tr class="bg-gray-200">
-                    <th class="py-3 px-4 font-bold text-gray-600">Masjid Name</th>
-                    <th class="py-3 px-4 font-bold text-gray-600">Location</th>
-                    <th class="py-3 px-4 font-bold text-gray-600">Contact</th>
+                <tr class="bg-gray-100">
+                    <th class="border border-gray-200 p-2">ID</th>
+                    <th class="border border-gray-200 p-2">Name</th>
+                    <th class="border border-gray-200 p-2">Type</th>
+                    <th class="border border-gray-200 p-2">State</th>
+                    <th class="border border-gray-200 p-2">City</th>
+                    <th class="border border-gray-200 p-2">Address</th>
+                    <th class="border border-gray-200 p-2">Latitude</th>
+                    <th class="border border-gray-200 p-2">Longitude</th>
+                    <th class="border border-gray-200 p-2">Phone</th>
                 </tr>
             </thead>
-            <tbody id="masjidTable">
+            <tbody id="masjid-table">
                 <tr>
-                    <td class="border py-2 px-4">Al Noor Mosque</td>
-                    <td class="border py-2 px-4">123 Main St, Springfield</td>
-                    <td class="border py-2 px-4">(555) 123-4567</td>
-                </tr>
-                <tr>
-                    <td class="border py-2 px-4">Al-Farooq Community Center</td>
-                    <td class="border py-2 px-4">456 Elm St, Springfield</td>
-                    <td class="border py-2 px-4">(555) 765-4321</td>
-                </tr>
-                <tr>
-                    <td class="border py-2 px-4">Masjid Al-Islam</td>
-                    <td class="border py-2 px-4">789 Pine St, Springfield</td>
-                    <td class="border py-2 px-4">(555) 987-6543</td>
+                    <td colspan="9" class="text-center p-2">Loading...</td>
                 </tr>
             </tbody>
         </table>
     </div>
     <script>
-        const searchInput = document.getElementById('search');
-        const masjidTable = document.getElementById('masjidTable');
-
-        searchInput.addEventListener('input', function() {
-            const filter = searchInput.value.toLowerCase();
-            const rows = masjidTable.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                let match = false;
-
-                for (let j = 0; j < cells.length; j++) {
-                    if (cells[j].innerText.toLowerCase().includes(filter)) {
-                        match = true;
-                        break;
-                    }
-                }
-                rows[i].style.display = match ? '' : 'none';
+        async function fetchMasjidData() {
+            try {
+                const response = await fetch('../data/masjids.csv');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.text();
+                const parsedData = parseCSV(data);
+                displayData(parsedData);
+            } catch (error) {
+                document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
             }
-        });
+        }
+
+        function parseCSV(data) {
+            const rows = data.split('\n').map(row => row.split(','));
+            const headers = rows[0];
+            return rows.slice(1).map(row => {
+                return row.reduce((acc, curr, index) => {
+                    acc[headers[index]] = curr;
+                    return acc;
+                }, {});
+            });
+        }
+
+        function displayData(masjids) {
+            const tableBody = document.getElementById('masjid-table');
+            tableBody.innerHTML = '';
+            masjids.forEach(masjid => {
+                const row = `<tr class='border border-gray-200'>
+                    <td class='border border-gray-200 p-2'>${masjid.ID}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Name}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Type}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.State}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.City}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Address}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Latitude}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Longitude}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.Phone}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+            setupSearch(masjids);
+        }
+
+        function setupSearch(masjids) {
+            const searchBox = document.getElementById('search');
+            searchBox.addEventListener('input', () => {
+                const filter = searchBox.value.toLowerCase();
+                const filteredMasjids = masjids.filter(masjid => {
+                    return masjid.Name.toLowerCase().includes(filter) ||
+                           masjid.City.toLowerCase().includes(filter) ||
+                           masjid.State.toLowerCase().includes(filter) ||
+                           masjid.Address.toLowerCase().includes(filter) ||
+                           masjid.Type.toLowerCase().includes(filter);
+                });
+                displayData(filteredMasjids);
+            });
+        }
+
+        window.onload = fetchMasjidData;
     </script>
 </body>
 </html>
