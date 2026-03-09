@@ -1,101 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masjid Finder</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masjid Finder</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+  /* Make header sticky */
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f0f9ff; /* Tailwind blue-100 */
+    z-index: 10;
+  }
+</style>
 </head>
-<body>
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-4">Masjid Finder</h1>
-        <input type="text" id="search" class="mb-4 p-2 border rounded" placeholder="Search masjids..." />
-        <table class="min-w-full border-collapse border border-gray-200">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border border-gray-200 p-2">ID</th>
-                    <th class="border border-gray-200 p-2">Name</th>
-                    <th class="border border-gray-200 p-2">Type</th>
-                    <th class="border border-gray-200 p-2">State</th>
-                    <th class="border border-gray-200 p-2">City</th>
-                    <th class="border border-gray-200 p-2">Address</th>
-                    <th class="border border-gray-200 p-2">Latitude</th>
-                    <th class="border border-gray-200 p-2">Longitude</th>
-                    <th class="border border-gray-200 p-2">Phone</th>
-                </tr>
-            </thead>
-            <tbody id="masjid-table">
-                <tr>
-                    <td colspan="9" class="text-center p-2">Loading...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+<body class="bg-gray-50">
 
-    <script>
-        async function fetchMasjidData() {
-            try {
-                // Dynamically construct path based on current GitHub Pages URL
-                const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
-                const csvPath = `${basePath}/data/masjids.csv`;
+<div class="container mx-auto p-4">
+  <h1 class="text-4xl font-bold mb-6 text-center text-gray-800">Masjid Finder</h1>
 
-                const response = await fetch(csvPath);
-                if (!response.ok) throw new Error('Network response was not ok');
+  <!-- Sticky Search Bar -->
+  <div class="sticky top-0 bg-gray-50 z-20 p-2 border-b border-gray-200 mb-4">
+    <input type="text" id="search" 
+      class="w-full max-w-lg p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="Search by Name, City, State, Type, Address, etc..." />
+  </div>
 
-                const csvText = await response.text();
+  <!-- Table Container (scrollable on small screens) -->
+  <div class="overflow-x-auto shadow rounded-lg">
+    <table class="min-w-full border-collapse">
+      <thead>
+        <tr>
+          <th class="border px-3 py-2">ID</th>
+          <th class="border px-3 py-2">Name</th>
+          <th class="border px-3 py-2">Type</th>
+          <th class="border px-3 py-2">State</th>
+          <th class="border px-3 py-2">City</th>
+          <th class="border px-3 py-2">Address</th>
+          <th class="border px-3 py-2">Latitude</th>
+          <th class="border px-3 py-2">Longitude</th>
+          <th class="border px-3 py-2">Phone</th>
+          <th class="border px-3 py-2">Email</th>
+          <th class="border px-3 py-2">Website</th>
+          <th class="border px-3 py-2">Prayer Times</th>
+          <th class="border px-3 py-2">Facilities</th>
+          <th class="border px-3 py-2">Capacity</th>
+          <th class="border px-3 py-2">Established Year</th>
+          <th class="border px-3 py-2">Notes</th>
+        </tr>
+      </thead>
+      <tbody id="masjid-table" class="bg-white">
+        <tr>
+          <td colspan="16" class="text-center p-4 text-gray-500">Loading data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-                // Parse CSV using PapaParse (handles quoted commas)
-                const parsedData = Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true
-                }).data;
+<script>
+let masjidData = [];
 
-                displayData(parsedData);
-            } catch (error) {
-                document.getElementById('masjid-table').innerHTML =
-                    `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
-            }
-        }
+async function fetchMasjidData() {
+  try {
+    const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+    const csvPath = `${basePath}/data/masjids.csv`;
 
-        function displayData(masjids) {
-            const tableBody = document.getElementById('masjid-table');
-            tableBody.innerHTML = '';
+    const response = await fetch(csvPath);
+    if (!response.ok) throw new Error('Network response was not ok');
 
-            masjids.forEach(masjid => {
-                const row = `<tr class='border border-gray-200'>
-                    <td class='border border-gray-200 p-2'>${masjid.id}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.name}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.type}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.state}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.city}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.address}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.latitude}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.longitude}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.phone}</td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
+    const csvText = await response.text();
 
-            setupSearch(masjids);
-        }
+    masjidData = Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true
+    }).data;
 
-        function setupSearch(masjids) {
-            const searchBox = document.getElementById('search');
-            searchBox.addEventListener('input', () => {
-                const filter = searchBox.value.toLowerCase();
-                const filteredMasjids = masjids.filter(masjid => {
-                    return masjid.name.toLowerCase().includes(filter) ||
-                           masjid.city.toLowerCase().includes(filter) ||
-                           masjid.state.toLowerCase().includes(filter) ||
-                           masjid.address.toLowerCase().includes(filter) ||
-                           masjid.type.toLowerCase().includes(filter);
-                });
-                displayData(filteredMasjids);
-            });
-        }
+    displayData(masjidData);
+  } catch (error) {
+    document.getElementById('masjid-table').innerHTML =
+      `<tr><td colspan='16' class='text-center text-red-500 p-4'>Error loading data: ${error.message}</td></tr>`;
+  }
+}
 
-        window.onload = fetchMasjidData;
-    </script>
+function displayData(data) {
+  const tableBody = document.getElementById('masjid-table');
+  tableBody.innerHTML = '';
+
+  if (!data.length) {
+    tableBody.innerHTML = `<tr><td colspan='16' class='text-center p-4 text-gray-500'>No results found</td></tr>`;
+    return;
+  }
+
+  data.forEach(masjid => {
+    const row = `<tr class="border-b hover:bg-gray-50">
+      <td class="border px-2 py-1">${masjid.id}</td>
+      <td class="border px-2 py-1">${masjid.name}</td>
+      <td class="border px-2 py-1">${masjid.type}</td>
+      <td class="border px-2 py-1">${masjid.state}</td>
+      <td class="border px-2 py-1">${masjid.city}</td>
+      <td class="border px-2 py-1">${masjid.address}</td>
+      <td class="border px-2 py-1">${masjid.latitude}</td>
+      <td class="border px-2 py-1">${masjid.longitude}</td>
+      <td class="border px-2 py-1">${masjid.phone}</td>
+      <td class="border px-2 py-1">${masjid.email}</td>
+      <td class="border px-2 py-1">${masjid.website}</td>
+      <td class="border px-2 py-1">${masjid.prayer_times}</td>
+      <td class="border px-2 py-1">${masjid.facilities}</td>
+      <td class="border px-2 py-1">${masjid.capacity}</td>
+      <td class="border px-2 py-1">${masjid.established_year}</td>
+      <td class="border px-2 py-1">${masjid.notes}</td>
+    </tr>`;
+    tableBody.innerHTML += row;
+  });
+}
+
+function setupSearch() {
+  const searchBox = document.getElementById('search');
+  searchBox.addEventListener('input', () => {
+    const filter = searchBox.value.toLowerCase().trim();
+
+    if (!filter) {
+      displayData(masjidData);
+      return;
+    }
+
+    const filtered = masjidData.filter(m => 
+      Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
+    );
+
+    displayData(filtered);
+  });
+}
+
+window.onload = () => {
+  fetchMasjidData().then(setupSearch);
+};
+</script>
+
 </body>
 </html>
