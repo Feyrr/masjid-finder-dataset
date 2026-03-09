@@ -7,22 +7,42 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
-  /* Sticky header with pink color */
+  /* Sticky header */
   thead th {
     position: sticky;
     top: 0;
-    background-color: #fb7185; /* pink-400 */
+    background-color: #ffe4ec; /* pink-100 */
     z-index: 10;
   }
 
-  /* Table/Card responsive */
+  /* Prevent table cell wrapping */
+  table td, table th {
+    white-space: nowrap;
+  }
+
+  /* Hide table on small screens, show card */
   @media (max-width: 768px) {
     .table-view { display: none; }
     .card-view { display: block; }
   }
+
   @media (min-width: 769px) {
     .table-view { display: table; }
     .card-view { display: none; }
+  }
+
+  /* Card text styling */
+  .card-view .card {
+    word-break: break-word; /* allow long words to wrap within card */
+  }
+
+  /* Optional: truncate very long fields in cards */
+  .card p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* show max 2 lines */
+    -webkit-box-orient: vertical;
   }
 </style>
 </head>
@@ -38,7 +58,7 @@
       placeholder="Search by Name, City, State, Type, Address, etc..." />
   </div>
 
-  <!-- Table view -->
+  <!-- Table view (desktop) -->
   <div class="overflow-x-auto shadow rounded-lg table-view">
     <table class="min-w-full border-collapse">
       <thead>
@@ -77,7 +97,6 @@ let masjidData = [];
 
 async function fetchMasjidData() {
   try {
-    // Dynamic CSV path
     const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
     const csvPath = `${basePath}/data/masjids.csv`;
 
@@ -86,14 +105,10 @@ async function fetchMasjidData() {
 
     const csvText = await response.text();
 
-    // Parse CSV and trim fields
     masjidData = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true
-    }).data.map(m => {
-      Object.keys(m).forEach(k => m[k] = (m[k] || '').trim());
-      return m;
-    });
+    }).data;
 
     displayData(masjidData);
   } catch (error) {
@@ -117,40 +132,38 @@ function displayData(data) {
   data.forEach(masjid => {
     // Table row
     const row = `<tr class="border-b hover:bg-gray-50">
-      <td>${masjid.id}</td>
-      <td>${masjid.name}</td>
-      <td>${masjid.type}</td>
-      <td>${masjid.state}</td>
-      <td>${masjid.city}</td>
-      <td>${masjid.address}</td>
-      <td>${masjid.latitude}</td>
-      <td>${masjid.longitude}</td>
-      <td>${masjid.phone}</td>
-      <td>${masjid.email}</td>
-      <td>${masjid.website}</td>
-      <td>${masjid.facilities}</td>
-      <td>${masjid.capacity}</td>
-      <td>${masjid.established_year}</td>
-      <td>${masjid.notes}</td>
+      <td class="border px-2 py-1">${masjid.id}</td>
+      <td class="border px-2 py-1">${masjid.name}</td>
+      <td class="border px-2 py-1">${masjid.type}</td>
+      <td class="border px-2 py-1">${masjid.state}</td>
+      <td class="border px-2 py-1">${masjid.city}</td>
+      <td class="border px-2 py-1">${masjid.address}</td>
+      <td class="border px-2 py-1">${masjid.latitude}</td>
+      <td class="border px-2 py-1">${masjid.longitude}</td>
+      <td class="border px-2 py-1">${masjid.phone}</td>
+      <td class="border px-2 py-1">${masjid.email}</td>
+      <td class="border px-2 py-1">${masjid.website}</td>
+      <td class="border px-2 py-1">${masjid.facilities}</td>
+      <td class="border px-2 py-1">${masjid.capacity}</td>
+      <td class="border px-2 py-1">${masjid.established_year}</td>
+      <td class="border px-2 py-1">${masjid.notes}</td>
     </tr>`;
     tableBody.innerHTML += row;
 
     // Mobile card
-    const card = `<div class="bg-white shadow rounded p-4 max-w-sm mx-auto">
-      <h2 class="font-bold text-lg mb-2 truncate">${masjid.name}</h2>
-      <div class="text-sm space-y-1">
-        <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
-        <p><span class="font-semibold">State:</span> ${masjid.state}</p>
-        <p><span class="font-semibold">City:</span> ${masjid.city}</p>
-        <p><span class="font-semibold">Address:</span> ${masjid.address}</p>
-        <p><span class="font-semibold">Phone:</span> ${masjid.phone}</p>
-        <p><span class="font-semibold">Email:</span> ${masjid.email}</p>
-        <p><span class="font-semibold">Website:</span> ${masjid.website}</p>
-        <p><span class="font-semibold">Facilities:</span> ${masjid.facilities}</p>
-        <p><span class="font-semibold">Capacity:</span> ${masjid.capacity}</p>
-        <p><span class="font-semibold">Established:</span> ${masjid.established_year}</p>
-        <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
-      </div>
+    const card = `<div class="card bg-white shadow rounded p-4">
+      <h2 class="font-bold text-lg mb-1">${masjid.name}</h2>
+      <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
+      <p><span class="font-semibold">State:</span> ${masjid.state}</p>
+      <p><span class="font-semibold">City:</span> ${masjid.city}</p>
+      <p><span class="font-semibold">Address:</span> ${masjid.address}</p>
+      <p><span class="font-semibold">Phone:</span> ${masjid.phone}</p>
+      <p><span class="font-semibold">Email:</span> ${masjid.email}</p>
+      <p><span class="font-semibold">Website:</span> ${masjid.website}</p>
+      <p><span class="font-semibold">Facilities:</span> ${masjid.facilities}</p>
+      <p><span class="font-semibold">Capacity:</span> ${masjid.capacity}</p>
+      <p><span class="font-semibold">Established:</span> ${masjid.established_year}</p>
+      <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
     </div>`;
     cardsContainer.innerHTML += card;
   });
@@ -164,7 +177,7 @@ function setupSearch() {
       displayData(masjidData);
       return;
     }
-    const filtered = masjidData.filter(m =>
+    const filtered = masjidData.filter(m => 
       Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
     );
     displayData(filtered);
