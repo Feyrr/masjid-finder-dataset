@@ -34,7 +34,7 @@
     <script>
         async function fetchMasjidData() {
             try {
-                const response = await fetch('/data/masjids.csv');
+                const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.text();
                 const parsedData = parseCSV(data);
