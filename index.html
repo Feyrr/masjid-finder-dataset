@@ -7,20 +7,19 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
-  /* Sticky header */
+  /* Sticky header with pink color */
   thead th {
     position: sticky;
     top: 0;
-    background-color: #ffe4ec; /* pink-100 */
+    background-color: #fb7185; /* pink-400 */
     z-index: 10;
   }
 
-  /* Hide table on small screens, show card */
+  /* Table/Card responsive */
   @media (max-width: 768px) {
     .table-view { display: none; }
     .card-view { display: block; }
   }
-
   @media (min-width: 769px) {
     .table-view { display: table; }
     .card-view { display: none; }
@@ -39,7 +38,7 @@
       placeholder="Search by Name, City, State, Type, Address, etc..." />
   </div>
 
-  <!-- Table view (desktop) -->
+  <!-- Table view -->
   <div class="overflow-x-auto shadow rounded-lg table-view">
     <table class="min-w-full border-collapse">
       <thead>
@@ -55,7 +54,6 @@
           <th class="border px-3 py-2">Phone</th>
           <th class="border px-3 py-2">Email</th>
           <th class="border px-3 py-2">Website</th>
-          <!-- prayer_times hidden -->
           <th class="border px-3 py-2">Facilities</th>
           <th class="border px-3 py-2">Capacity</th>
           <th class="border px-3 py-2">Established Year</th>
@@ -72,7 +70,6 @@
 
   <!-- Card view (mobile) -->
   <div id="masjid-cards" class="card-view space-y-4"></div>
-
 </div>
 
 <script>
@@ -80,6 +77,7 @@ let masjidData = [];
 
 async function fetchMasjidData() {
   try {
+    // Dynamic CSV path
     const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
     const csvPath = `${basePath}/data/masjids.csv`;
 
@@ -88,10 +86,14 @@ async function fetchMasjidData() {
 
     const csvText = await response.text();
 
+    // Parse CSV and trim fields
     masjidData = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true
-    }).data;
+    }).data.map(m => {
+      Object.keys(m).forEach(k => m[k] = (m[k] || '').trim());
+      return m;
+    });
 
     displayData(masjidData);
   } catch (error) {
@@ -112,7 +114,7 @@ function displayData(data) {
     return;
   }
 
-data.forEach(masjid => {
+  data.forEach(masjid => {
     // Table row
     const row = `<tr class="border-b hover:bg-gray-50">
       <td>${masjid.id}</td>
@@ -134,25 +136,26 @@ data.forEach(masjid => {
     tableBody.innerHTML += row;
 
     // Mobile card
-    const card = `<div class="bg-white shadow rounded p-4">
-      <h2 class="font-bold text-lg mb-1">${masjid.name}</h2>
-      <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
-      <p><span class="font-semibold">State:</span> ${masjid.state}</p>
-      <p><span class="font-semibold">City:</span> ${masjid.city}</p>
-      <p><span class="font-semibold">Address:</span> ${masjid.address}</p>
-      <p><span class="font-semibold">Phone:</span> ${masjid.phone}</p>
-      <p><span class="font-semibold">Email:</span> ${masjid.email}</p>
-      <p><span class="font-semibold">Website:</span> ${masjid.website}</p>
-      <p><span class="font-semibold">Facilities:</span> ${masjid.facilities}</p>
-      <p><span class="font-semibold">Capacity:</span> ${masjid.capacity}</p>
-      <p><span class="font-semibold">Established:</span> ${masjid.established_year}</p>
-      <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
+    const card = `<div class="bg-white shadow rounded p-4 max-w-sm mx-auto">
+      <h2 class="font-bold text-lg mb-2 truncate">${masjid.name}</h2>
+      <div class="text-sm space-y-1">
+        <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
+        <p><span class="font-semibold">State:</span> ${masjid.state}</p>
+        <p><span class="font-semibold">City:</span> ${masjid.city}</p>
+        <p><span class="font-semibold">Address:</span> ${masjid.address}</p>
+        <p><span class="font-semibold">Phone:</span> ${masjid.phone}</p>
+        <p><span class="font-semibold">Email:</span> ${masjid.email}</p>
+        <p><span class="font-semibold">Website:</span> ${masjid.website}</p>
+        <p><span class="font-semibold">Facilities:</span> ${masjid.facilities}</p>
+        <p><span class="font-semibold">Capacity:</span> ${masjid.capacity}</p>
+        <p><span class="font-semibold">Established:</span> ${masjid.established_year}</p>
+        <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
+      </div>
     </div>`;
     cardsContainer.innerHTML += card;
-});
-
+  });
 }
-  
+
 function setupSearch() {
   const searchBox = document.getElementById('search');
   searchBox.addEventListener('input', () => {
@@ -161,7 +164,7 @@ function setupSearch() {
       displayData(masjidData);
       return;
     }
-    const filtered = masjidData.filter(m => 
+    const filtered = masjidData.filter(m =>
       Object.values(m).some(v => v && v.toString().toLowerCase().includes(filter))
     );
     displayData(filtered);
