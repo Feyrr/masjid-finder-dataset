@@ -33,6 +33,30 @@
         </table>
     </div>
     <script>
+        async function fetchMasjidData() {
+            try {
+                const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.text();
+                const parsedData = parseCSV(data);
+                displayData(parsedData);
+            } catch (error) {
+                document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
+            }
+        }
+
+        function parseCSV(data) {
+            const rows = data.split('\n').map(row => row.split(','));
+            const headers = rows[0];
+            return rows.slice(1).map(row => {
+                return row.reduce((acc, curr, index) => {
+                    acc[headers[index]] = curr;
+                    return acc;
+                }, {});
+            });
+        }
+
+
         // async function fetchMasjidData() {
         //     try {
         //         const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
@@ -52,27 +76,6 @@
         //         document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
         //     }
         // }
-
-
-        async function fetchMasjidData() {
-            try {
-                const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
-                if (!response.ok) throw new Error('Network response was not ok');
-                const csvText = await response.text();
-        
-                // Parse CSV using PapaParse
-                const parsedData = Papa.parse(csvText, {
-                    header: true,      // first row as header
-                    skipEmptyLines: true,
-                    dynamicTyping: false
-                }).data;
-        
-                console.log(parsedData); // Check if parsing worked
-                displayData(parsedData);
-            } catch (error) {
-                document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
-            }
-        }
 
 
 
