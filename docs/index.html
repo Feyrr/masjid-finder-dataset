@@ -1,1 +1,75 @@
-<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Masjid Finder</title>\n    <style>\n        body { font-family: Arial, sans-serif; }\n        #map { height: 400px; width: 100%; }\n        table { width: 100%; border-collapse: collapse; margin-top: 20px; }\n        table, th, td { border: 1px solid black; }\n        th, td { padding: 8px; text-align: left; }\n    </style>\n    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>\n</head>\n<body>\n    <h1>Masjid Finder</h1>\n    <input type="text" id="search" placeholder="Search masjids..." onkeyup="searchMasjids()">\n    <div id="map"></div>\n    <table id="masjidTable">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Address</th>\n                <th>Coordinates</th>\n            </tr>\n        </thead>\n        <tbody>\n            <!-- Masjid data will be populated here -->\n        </tbody>\n    </table>\n    <script>\n        const masjidData = [\n            { name: 'Masjid A', address: 'Address A', coords: { lat: -34.397, lng: 150.644 } },\n            { name: 'Masjid B', address: 'Address B', coords: { lat: -35.307, lng: 149.124 } }\n            // Add more masjid data as needed\n        ];\n\n        function initMap() {\n            const center = { lat: -34.397, lng: 150.644 };\n            const map = new google.maps.Map(document.getElementById('map'), {\n                zoom: 8,\n                center: center\n            });\n\n            masjidData.forEach(masjid => {\n                const marker = new google.maps.Marker({\n                    position: masjid.coords,\n                    map: map,\n                    title: masjid.name\n                });\n            });\n        }\n\n        function searchMasjids() {\n            const input = document.getElementById('search').value.toLowerCase();\n            const table = document.getElementById('masjidTable').getElementsByTagName('tbody')[0];\n            table.innerHTML = '';\n            masjidData.forEach(masjid => {\n                if (masjid.name.toLowerCase().includes(input) || masjid.address.toLowerCase().includes(input)) {\n                    const row = table.insertRow();\n                    row.insertCell(0).innerText = masjid.name;\n                    row.insertCell(1).innerText = masjid.address;\n                    row.insertCell(2).innerText = `${masjid.coords.lat}, ${masjid.coords.lng}`;\n                }\n            });\n        }\n\n        window.onload = initMap;\n    </script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masjid Finder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+        }
+        table {
+            transition: transform 0.2s;
+        }
+        table:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="container mx-auto p-5">
+        <h1 class="text-4xl text-center mb-6 text-white">Masjid Finder</h1>
+        <input type="text" id="search" placeholder="Search masjid..." class="mb-4 p-2 w-full rounded border border-gray-300">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-md">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="py-3 px-4 font-bold text-gray-600">Masjid Name</th>
+                    <th class="py-3 px-4 font-bold text-gray-600">Location</th>
+                    <th class="py-3 px-4 font-bold text-gray-600">Contact</th>
+                </tr>
+            </thead>
+            <tbody id="masjidTable">
+                <tr>
+                    <td class="border py-2 px-4">Al Noor Mosque</td>
+                    <td class="border py-2 px-4">123 Main St, Springfield</td>
+                    <td class="border py-2 px-4">(555) 123-4567</td>
+                </tr>
+                <tr>
+                    <td class="border py-2 px-4">Al-Farooq Community Center</td>
+                    <td class="border py-2 px-4">456 Elm St, Springfield</td>
+                    <td class="border py-2 px-4">(555) 765-4321</td>
+                </tr>
+                <tr>
+                    <td class="border py-2 px-4">Masjid Al-Islam</td>
+                    <td class="border py-2 px-4">789 Pine St, Springfield</td>
+                    <td class="border py-2 px-4">(555) 987-6543</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const searchInput = document.getElementById('search');
+        const masjidTable = document.getElementById('masjidTable');
+
+        searchInput.addEventListener('input', function() {
+            const filter = searchInput.value.toLowerCase();
+            const rows = masjidTable.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].innerText.toLowerCase().includes(filter)) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+        });
+    </script>
+</body>
+</html>
