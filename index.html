@@ -32,72 +32,51 @@
             </tbody>
         </table>
     </div>
+
     <script>
         async function fetchMasjidData() {
             try {
-                const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
+                // Dynamically construct path based on current GitHub Pages URL
+                const basePath = window.location.pathname.split('/').slice(0, -1).join('/');
+                const csvPath = `${basePath}/data/masjids.csv`;
+
+                const response = await fetch(csvPath);
                 if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.text();
-                const parsedData = parseCSV(data);
+
+                const csvText = await response.text();
+
+                // Parse CSV using PapaParse (handles quoted commas)
+                const parsedData = Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true
+                }).data;
+
                 displayData(parsedData);
             } catch (error) {
-                document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
+                document.getElementById('masjid-table').innerHTML =
+                    `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
             }
         }
-
-        function parseCSV(data) {
-            const rows = data.split('\n').map(row => row.split(','));
-            const headers = rows[0];
-            return rows.slice(1).map(row => {
-                return row.reduce((acc, curr, index) => {
-                    acc[headers[index]] = curr;
-                    return acc;
-                }, {});
-            });
-        }
-
-
-        // async function fetchMasjidData() {
-        //     try {
-        //         const response = await fetch('/masjid-finder-dataset/data/masjids.csv');
-        //         if (!response.ok) throw new Error('Network response was not ok');
-        //         const csvText = await response.text();
-        
-        //         // Parse CSV using PapaParse
-        //         const parsedData = Papa.parse(csvText, {
-        //             header: true,      // first row as header
-        //             skipEmptyLines: true,
-        //             dynamicTyping: false
-        //         }).data;
-        
-        //         console.log(parsedData); // Check if parsing worked
-        //         displayData(parsedData);
-        //     } catch (error) {
-        //         document.getElementById('masjid-table').innerHTML = `<tr><td colspan='9' class='text-red-500 text-center'>Error loading data: ${error.message}</td></tr>`;
-        //     }
-        // }
-
-
-
-        
 
         function displayData(masjids) {
             const tableBody = document.getElementById('masjid-table');
             tableBody.innerHTML = '';
+
             masjids.forEach(masjid => {
                 const row = `<tr class='border border-gray-200'>
-                    <td class='border border-gray-200 p-2'>${masjid.ID}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Name}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Type}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.State}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.City}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Address}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Latitude}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Longitude}</td>
-                    <td class='border border-gray-200 p-2'>${masjid.Phone}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.id}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.name}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.type}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.state}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.city}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.address}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.latitude}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.longitude}</td>
+                    <td class='border border-gray-200 p-2'>${masjid.phone}</td>
                 </tr>`;
                 tableBody.innerHTML += row;
             });
+
             setupSearch(masjids);
         }
 
@@ -106,11 +85,11 @@
             searchBox.addEventListener('input', () => {
                 const filter = searchBox.value.toLowerCase();
                 const filteredMasjids = masjids.filter(masjid => {
-                    return masjid.Name.toLowerCase().includes(filter) ||
-                           masjid.City.toLowerCase().includes(filter) ||
-                           masjid.State.toLowerCase().includes(filter) ||
-                           masjid.Address.toLowerCase().includes(filter) ||
-                           masjid.Type.toLowerCase().includes(filter);
+                    return masjid.name.toLowerCase().includes(filter) ||
+                           masjid.city.toLowerCase().includes(filter) ||
+                           masjid.state.toLowerCase().includes(filter) ||
+                           masjid.address.toLowerCase().includes(filter) ||
+                           masjid.type.toLowerCase().includes(filter);
                 });
                 displayData(filteredMasjids);
             });
