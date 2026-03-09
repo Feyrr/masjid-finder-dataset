@@ -7,43 +7,44 @@
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <style>
-  /* Sticky header */
-  thead th {
-    position: sticky;
-    top: 0;
-    background-color: #ffe4ec; /* pink-100 */
-    z-index: 10;
-  }
+/* Freeze header row */
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #ffe4ec; /* soft pink */
+  z-index: 10;
+}
 
-  /* Freeze first column */
-  th:first-child,
-  td:first-child {
-    position: sticky;
-    left: 0;
-    background-color: #ffe4ec;
-    z-index: 20;
-  }
+/* Table improvements */
+.table-view table {
+  border-collapse: collapse;
+  width: 100%;
+}
 
-  /* Table nowrap */
-  table td, table th {
-    white-space: nowrap;
-  }
+.table-view th, .table-view td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  min-width: 120px;
+}
 
-  /* Hide table on small screens, show card */
-  @media (max-width: 768px) {
-    .table-view { display: none; }
-    .card-view { display: block; }
-  }
+.table-view tbody tr:nth-child(even) {
+  background-color: #fff0f6;
+}
 
-  @media (min-width: 769px) {
-    .table-view { display: block; }
-    .card-view { display: none; }
-  }
+.table-view tbody tr:hover {
+  background-color: #ffd6e8;
+}
 
-  /* Mobile card word break */
-  .card-view .card p {
-    word-break: break-word;
-  }
+/* Responsive: hide table, show card on mobile */
+@media (max-width: 768px) {
+  .table-view { display: none; }
+  .card-view { display: block; }
+}
+
+@media (min-width: 769px) {
+  .table-view { display: block; }
+  .card-view { display: none; }
+}
 </style>
 </head>
 <body class="bg-gray-50">
@@ -58,29 +59,29 @@
       placeholder="Search by Name, City, State, Type, Address, etc..." />
   </div>
 
-  <!-- Table view (desktop) -->
-  <div class="overflow-x-auto shadow rounded-lg table-view flex justify-center px-2">
-    <table class="min-w-full border-collapse table-auto">
+  <!-- Table view -->
+  <div class="overflow-x-auto shadow-lg rounded-lg table-view bg-white">
+    <table class="min-w-full">
       <thead>
         <tr>
-          <th class="border px-3 py-2">ID</th>
-          <th class="border px-3 py-2">Name</th>
-          <th class="border px-3 py-2">Type</th>
-          <th class="border px-3 py-2">State</th>
-          <th class="border px-3 py-2">City</th>
-          <th class="border px-3 py-2">Address</th>
-          <th class="border px-3 py-2">Latitude</th>
-          <th class="border px-3 py-2">Longitude</th>
-          <th class="border px-3 py-2">Phone</th>
-          <th class="border px-3 py-2">Email</th>
-          <th class="border px-3 py-2">Website</th>
-          <th class="border px-3 py-2">Facilities</th>
-          <th class="border px-3 py-2">Capacity</th>
-          <th class="border px-3 py-2">Established Year</th>
-          <th class="border px-3 py-2">Notes</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>State</th>
+          <th>City</th>
+          <th>Address</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Website</th>
+          <th>Facilities</th>
+          <th>Capacity</th>
+          <th>Established Year</th>
+          <th>Notes</th>
         </tr>
       </thead>
-      <tbody id="masjid-table" class="bg-white">
+      <tbody id="masjid-table">
         <tr>
           <td colspan="15" class="text-center p-4 text-gray-500">Loading data...</td>
         </tr>
@@ -131,7 +132,7 @@ function displayData(data) {
 
   data.forEach(masjid => {
     // Table row
-    const row = `<tr class="border-b hover:bg-gray-50">
+    const row = `<tr class="hover:bg-gray-50">
       <td>${masjid.id}</td>
       <td>${masjid.name}</td>
       <td>${masjid.type}</td>
@@ -150,8 +151,8 @@ function displayData(data) {
     </tr>`;
     tableBody.innerHTML += row;
 
-    // Mobile card
-    const card = `<div class="card bg-white shadow rounded p-4">
+    // Card for mobile
+    const card = `<div class="bg-white shadow rounded p-4">
       <h2 class="font-bold text-lg mb-1">${masjid.name}</h2>
       <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
       <p><span class="font-semibold">State:</span> ${masjid.state}</p>
