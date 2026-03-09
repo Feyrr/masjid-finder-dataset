@@ -112,28 +112,28 @@ function displayData(data) {
     return;
   }
 
-  data.forEach(masjid => {
+data.forEach(masjid => {
     // Table row
     const row = `<tr class="border-b hover:bg-gray-50">
-      <td class="border px-2 py-1">${masjid.id}</td>
-      <td class="border px-2 py-1">${masjid.name}</td>
-      <td class="border px-2 py-1">${masjid.type}</td>
-      <td class="border px-2 py-1">${masjid.state}</td>
-      <td class="border px-2 py-1">${masjid.city}</td>
-      <td class="border px-2 py-1">${masjid.address}</td>
-      <td class="border px-2 py-1">${masjid.latitude}</td>
-      <td class="border px-2 py-1">${masjid.longitude}</td>
-      <td class="border px-2 py-1">${masjid.phone}</td>
-      <td class="border px-2 py-1">${masjid.email}</td>
-      <td class="border px-2 py-1">${masjid.website}</td>
-      <td class="border px-2 py-1">${masjid.facilities}</td>
-      <td class="border px-2 py-1">${masjid.capacity}</td>
-      <td class="border px-2 py-1">${masjid.established_year}</td>
-      <td class="border px-2 py-1">${masjid.notes}</td>
+      <td>${masjid.id}</td>
+      <td>${masjid.name}</td>
+      <td>${masjid.type}</td>
+      <td>${masjid.state}</td>
+      <td>${masjid.city}</td>
+      <td>${masjid.address}</td>
+      <td>${masjid.latitude}</td>
+      <td>${masjid.longitude}</td>
+      <td>${masjid.phone}</td>
+      <td>${masjid.email}</td>
+      <td>${masjid.website}</td>
+      <td>${masjid.facilities}</td>
+      <td>${masjid.capacity}</td>
+      <td>${masjid.established_year}</td>
+      <td>${masjid.notes}</td>
     </tr>`;
     tableBody.innerHTML += row;
 
-    // Card for mobile
+    // Mobile card
     const card = `<div class="bg-white shadow rounded p-4">
       <h2 class="font-bold text-lg mb-1">${masjid.name}</h2>
       <p><span class="font-semibold">Type:</span> ${masjid.type}</p>
@@ -149,9 +149,8 @@ function displayData(data) {
       <p><span class="font-semibold">Notes:</span> ${masjid.notes}</p>
     </div>`;
     cardsContainer.innerHTML += card;
-  });
-}
-
+});
+  
 function setupSearch() {
   const searchBox = document.getElementById('search');
   searchBox.addEventListener('input', () => {
